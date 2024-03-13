@@ -1,0 +1,35 @@
+name: Assignment check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  tests:
+    env:
+      ORG: "uazhlt"
+      IMAGE_NAME: "pa-getting-started"
+      TAG: "latest"
+    name: "Programming assignment"
+    runs-on: ubuntu-latest
+    steps:
+    # Checkout code
+    - name: Checkout code
+      uses: actions/checkout@v2
+    # Setup docker
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v1
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+    # Run tests
+    - name: "Check assignment tests"
+      run: |
+        docker run -v $PWD:/app/ -i ${ORG}/${IMAGE_NAME}:${TAG} nbgrader validate assignment.ipynb
+        docker run -v $PWD:/app/ -i ${ORG}/${IMAGE_NAME}:${TAG} jupyter nbconvert --to html --ExecutePreprocessor.timeout=180 --execute assignment.ipynb
+    # Check bonus
+    # - name: "Check assignment bonus"
+    #   run: |
+    #     docker run -v $PWD:/app/ -i ${ORG}/${IMAGE_NAME}:${TAG} jupyter nbconvert --to html --ExecutePreprocessor.timeout=180 --execute bonus.ipynb
+    #     docker run -v $PWD:/app/ -i ${ORG}/${IMAGE_NAME}:${TAG} nbgrader validate bonus.ipynb
